@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package policy.v1;
+
+import "google/protobuf/struct.proto";
+
+service PolicyService {
+  rpc Run(RunRequest) returns (RunResponse);
+  rpc RunPolicy(RunPolicyRequest) returns (RunResponse);
+}
+
+service FlowService {
+  rpc RunFlow(RunFlowRequest) returns (FlowResponse);
+  rpc TestFlow(TestFlowRequest) returns (FlowResponse);
+}
+
+message RunRequest {
+  string rule = 1;
+  google.protobuf.Struct data = 2;
+  google.protobuf.Struct tests = 3;
+  google.protobuf.Struct schema = 4;
+}
+
+message RunPolicyRequest {
+  string policy_id = 1;
+  google.protobuf.Struct data = 2;
+  string base_id = 3;
+}
+
+message RunResponse {
+  bool result = 1;
+  google.protobuf.Struct trace = 2;
+  repeated string rule = 3;
+  google.protobuf.Struct data = 4;
+  google.protobuf.Struct error = 5;
+  google.protobuf.Struct labels = 6;
+  ExecutionTiming execution = 7;
+}
+
+message ExecutionTiming {
+  OrchestratorTiming orchestrator = 1;
+  string engine = 2;
+  string total = 3;
+}
+
+message OrchestratorTiming {
+  string go = 1;
+  string database = 2;
+  string total = 3;
+}
+
+message RunFlowRequest {
+  string flow_id = 1;
+  google.protobuf.Struct data = 2;
+  string base_id = 3;
+}
+
+message TestFlowRequest {
+  google.protobuf.Struct data = 1;
+  string flow_yaml = 2;
+}
+
+message FlowResponse {
+  google.protobuf.Value result = 1;
+  repeated FlowNodeResponse node_response = 2;
+  FlowExecutionTiming execution = 3;
+}
+
+message FlowNodeResponse {
+  string node_id = 1;
+  string node_type = 2;
+  RunResponse response = 3;
+  FlowNodeExecution execution = 4;
+}
+
+message FlowNodeExecution {
+  string database = 1;
+  string engine = 2;
+  string total = 3;
+}
+
+message FlowExecutionTiming {
+  string orchestrator = 1;
+  string database = 2;
+  string engine = 3;
+  string total = 4;
+}
