@@ -15,7 +15,7 @@ import type {
   RpcTransportConfig,
 } from "../types.js";
 
-const PROTO_PATH = new URL("../../proto/policy.proto", import.meta.url);
+const PROTO_PATH = new URL("../../../protos/policy/v1/policy.proto", import.meta.url);
 
 type RpcMetadata = {
   add: (key: string, value: string) => void;

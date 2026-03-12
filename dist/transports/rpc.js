@@ -1,5 +1,5 @@
 import { AuthenticationError, AuthorizationError, ConfigurationError, ServerError, TransportError, } from "../errors.js";
-const PROTO_PATH = new URL("../../proto/policy.proto", import.meta.url);
+const PROTO_PATH = new URL("../../../protos/proto/v1/policy.proto", import.meta.url);
 export class RpcExecutionTransport {
     config;
     transport;
