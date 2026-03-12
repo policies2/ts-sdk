@@ -70,7 +70,7 @@ describe("ExecutionClient", () => {
     const metadataAdds: Array<[string, string]> = [];
     const runPolicy = mock(
       (
-        request: { policy_id?: string; base_id?: string; data: Record<string, unknown> },
+        request: { policyId?: string; baseId?: string; data: Record<string, unknown> },
         metadata: { add: (key: string, value: string) => void },
         callback: (error: Error | null, response?: Record<string, unknown>) => void,
       ) => {
@@ -78,7 +78,7 @@ describe("ExecutionClient", () => {
           metadataAdds.push([key, value]);
         };
         expect(request).toEqual({
-          base_id: "base-123",
+          baseId: "base-123",
           data: { user: { age: 25 } },
         });
         callback(null, {
@@ -94,7 +94,7 @@ describe("ExecutionClient", () => {
 
     const runFlow = mock(
       (
-        _request: { flow_id?: string; base_id?: string; data: Record<string, unknown> },
+        _request: { flowId?: string; baseId?: string; data: Record<string, unknown> },
         _metadata: { add: (key: string, value: string) => void },
         callback: (error: Error | null, response?: Record<string, unknown>) => void,
       ) => callback(null, { result: true, nodeResponse: [] }),

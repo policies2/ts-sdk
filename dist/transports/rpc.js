@@ -53,7 +53,7 @@ export class RpcExecutionTransport {
             const grpcModule = grpcImport;
             const protoLoader = loaderImport;
             const packageDefinition = await protoLoader.load(PROTO_PATH.pathname, {
-                keepCase: true,
+                keepCase: false,
                 longs: String,
                 enums: String,
                 defaults: true,
@@ -78,8 +78,8 @@ export class RpcExecutionTransport {
         const metadata = new grpcModule.Metadata();
         metadata.add("x-api-key", this.config.apiKey);
         const rpcRequest = (request.reference ?? "version") === "base"
-            ? { base_id: request.id, data: request.data }
-            : { policy_id: request.id, data: request.data };
+            ? { baseId: request.id, data: request.data }
+            : { policyId: request.id, data: request.data };
         return new Promise((resolve, reject) => {
             client.RunPolicy(rpcRequest, metadata, (error, response) => {
                 if (error) {
@@ -95,8 +95,8 @@ export class RpcExecutionTransport {
         const metadata = new grpcModule.Metadata();
         metadata.add("x-api-key", this.config.apiKey);
         const rpcRequest = (request.reference ?? "version") === "base"
-            ? { base_id: request.id, data: request.data }
-            : { flow_id: request.id, data: request.data };
+            ? { baseId: request.id, data: request.data }
+            : { flowId: request.id, data: request.data };
         return new Promise((resolve, reject) => {
             client.RunFlow(rpcRequest, metadata, (error, response) => {
                 if (error) {

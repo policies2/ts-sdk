@@ -40,7 +40,7 @@ type ProtoLoaderModule = {
 
 type PolicyServiceClient = {
   RunPolicy: (
-    request: { policy_id?: string; base_id?: string; data: JsonObject },
+    request: { policyId?: string; baseId?: string; data: JsonObject },
     metadata: RpcMetadata,
     callback: (error: RpcServiceError | null, response?: RpcPolicyResponse) => void,
   ) => void;
@@ -48,7 +48,7 @@ type PolicyServiceClient = {
 
 type FlowServiceClient = {
   RunFlow: (
-    request: { flow_id?: string; base_id?: string; data: JsonObject },
+    request: { flowId?: string; baseId?: string; data: JsonObject },
     metadata: RpcMetadata,
     callback: (error: RpcServiceError | null, response?: RpcFlowResponse) => void,
   ) => void;
@@ -134,7 +134,7 @@ export class RpcExecutionTransport {
       const grpcModule = grpcImport as unknown as GrpcModule;
       const protoLoader = loaderImport as unknown as ProtoLoaderModule;
       const packageDefinition = await protoLoader.load(PROTO_PATH.pathname, {
-        keepCase: true,
+        keepCase: false,
         longs: String,
         enums: String,
         defaults: true,
@@ -166,8 +166,8 @@ export class RpcExecutionTransport {
     metadata.add("x-api-key", this.config.apiKey);
     const rpcRequest =
       (request.reference ?? "version") === "base"
-        ? { base_id: request.id, data: request.data }
-        : { policy_id: request.id, data: request.data };
+        ? { baseId: request.id, data: request.data }
+        : { policyId: request.id, data: request.data };
 
     return new Promise((resolve, reject) => {
       client.RunPolicy(rpcRequest, metadata, (error, response) => {
@@ -190,8 +190,8 @@ export class RpcExecutionTransport {
     metadata.add("x-api-key", this.config.apiKey);
     const rpcRequest =
       (request.reference ?? "version") === "base"
-        ? { base_id: request.id, data: request.data }
-        : { flow_id: request.id, data: request.data };
+        ? { baseId: request.id, data: request.data }
+        : { flowId: request.id, data: request.data };
 
     return new Promise((resolve, reject) => {
       client.RunFlow(rpcRequest, metadata, (error, response) => {
