@@ -72,6 +72,7 @@ describe("ExecutionClient", () => {
       (
         request: { policyId?: string; baseId?: string; data: Record<string, unknown> },
         metadata: { add: (key: string, value: string) => void },
+        options: { deadline?: Date },
         callback: (error: Error | null, response?: Record<string, unknown>) => void,
       ) => {
         metadata.add = (key, value) => {
@@ -81,6 +82,7 @@ describe("ExecutionClient", () => {
           baseId: "base-123",
           data: { user: { age: 25 } },
         });
+        expect(options.deadline).toBeInstanceOf(Date);
         callback(null, {
           result: true,
           trace: null,
@@ -96,6 +98,7 @@ describe("ExecutionClient", () => {
       (
         _request: { flowId?: string; baseId?: string; data: Record<string, unknown> },
         _metadata: { add: (key: string, value: string) => void },
+        _options: { deadline?: Date },
         callback: (error: Error | null, response?: Record<string, unknown>) => void,
       ) => callback(null, { result: true, nodeResponse: [] }),
     );

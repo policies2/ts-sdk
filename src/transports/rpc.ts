@@ -42,6 +42,7 @@ type PolicyServiceClient = {
   RunPolicy: (
     request: { policyId?: string; baseId?: string; data: JsonObject },
     metadata: RpcMetadata,
+    options: { deadline?: Date },
     callback: (error: RpcServiceError | null, response?: RpcPolicyResponse) => void,
   ) => void;
 };
@@ -50,6 +51,7 @@ type FlowServiceClient = {
   RunFlow: (
     request: { flowId?: string; baseId?: string; data: JsonObject },
     metadata: RpcMetadata,
+    options: { deadline?: Date },
     callback: (error: RpcServiceError | null, response?: RpcFlowResponse) => void,
   ) => void;
 };
@@ -66,6 +68,7 @@ export class RpcExecutionTransport {
   readonly kind = "rpc";
   private policyClientPromise?: Promise<PolicyServiceClient>;
   private flowClientPromise?: Promise<FlowServiceClient>;
+  private static readonly DEFAULT_TIMEOUT_MS = 30_000;
 
   constructor(
     private readonly config: ExecutionClientConfig,
@@ -164,13 +167,18 @@ export class RpcExecutionTransport {
     const grpcModule = (await import("@grpc/grpc-js")) as unknown as GrpcModule;
     const metadata = new grpcModule.Metadata();
     metadata.add("x-api-key", this.config.apiKey);
+    const options = {
+      deadline: new Date(
+        Date.now() + (this.config.timeoutMs ?? RpcExecutionTransport.DEFAULT_TIMEOUT_MS),
+      ),
+    };
     const rpcRequest =
       (request.reference ?? "version") === "base"
         ? { baseId: request.id, data: request.data }
         : { policyId: request.id, data: request.data };
 
     return new Promise((resolve, reject) => {
-      client.RunPolicy(rpcRequest, metadata, (error, response) => {
+      client.RunPolicy(rpcRequest, metadata, options, (error, response) => {
         if (error) {
           reject(this.mapRpcError(error, grpcModule));
           return;
@@ -188,13 +196,18 @@ export class RpcExecutionTransport {
     const grpcModule = (await import("@grpc/grpc-js")) as unknown as GrpcModule;
     const metadata = new grpcModule.Metadata();
     metadata.add("x-api-key", this.config.apiKey);
+    const options = {
+      deadline: new Date(
+        Date.now() + (this.config.timeoutMs ?? RpcExecutionTransport.DEFAULT_TIMEOUT_MS),
+      ),
+    };
     const rpcRequest =
       (request.reference ?? "version") === "base"
         ? { baseId: request.id, data: request.data }
         : { flowId: request.id, data: request.data };
 
     return new Promise((resolve, reject) => {
-      client.RunFlow(rpcRequest, metadata, (error, response) => {
+      client.RunFlow(rpcRequest, metadata, options, (error, response) => {
         if (error) {
           reject(this.mapRpcError(error, grpcModule));
           return;

@@ -5,6 +5,7 @@ export declare class RpcExecutionTransport {
     readonly kind = "rpc";
     private policyClientPromise?;
     private flowClientPromise?;
+    private static readonly DEFAULT_TIMEOUT_MS;
     constructor(config: ExecutionClientConfig, transport: RpcTransportConfig);
     executePolicy(request: ExecutePolicyRequest): Promise<PolicyExecutionResult>;
     executeFlow(request: ExecuteFlowRequest): Promise<FlowExecutionResult>;
