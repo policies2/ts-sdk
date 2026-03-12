@@ -11,6 +11,7 @@
   ],
   "scripts": {
     "build": "tsc",
+    "build:examples": "tsc --module NodeNext --moduleResolution NodeNext --target ES2022 --outDir dist/examples examples/*.ts",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
     "prepublishOnly": "tsc"

@@ -83,6 +83,19 @@ Executes a stored policy and returns a `PolicyExecutionResult`.
 
 Executes a stored flow and returns a `FlowExecutionResult`.
 
+## Examples
+
+- REST policy execution: [`examples/policy-rest.ts`](/Users/keloran/Projects/policy/ts-sdk/examples/policy-rest.ts)
+- RPC policy execution: [`examples/policy-rpc.ts`](/Users/keloran/Projects/policy/ts-sdk/examples/policy-rpc.ts)
+- REST flow execution: [`examples/flow-rest.ts`](/Users/keloran/Projects/policy/ts-sdk/examples/flow-rest.ts)
+- RPC flow execution: [`examples/flow-rpc.ts`](/Users/keloran/Projects/policy/ts-sdk/examples/flow-rpc.ts)
+
+You can run an example with Bun from the package root:
+
+```bash
+bun examples/policy-rest.ts
+```
+
 ## Notes
 
 - API key auth is the only auth model exposed by this SDK.
