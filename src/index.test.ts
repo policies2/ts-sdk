@@ -117,22 +117,13 @@ describe("ExecutionClient", () => {
         UNAUTHENTICATED: 16,
         PERMISSION_DENIED: 7,
       },
-      loadPackageDefinition: () => ({
-        policy: {
-          v1: {
-            PolicyService: class {
-              RunPolicy = runPolicy;
-            },
-            FlowService: class {
-              RunFlow = runFlow;
-            },
-          },
-        },
-      }),
-    }));
+      makeGenericClientConstructor: (_definition: unknown, serviceName: string) =>
+        class {
+          constructor(_address: string, _credentials: unknown) {}
 
-    mock.module("@grpc/proto-loader", () => ({
-      load: async () => ({}),
+          RunPolicy = serviceName === "PolicyService" ? runPolicy : undefined;
+          RunFlow = serviceName === "FlowService" ? runFlow : undefined;
+        },
     }));
 
     const client = new ExecutionClient({

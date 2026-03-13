@@ -1,10 +1,13 @@
 import {
   AuthenticationError,
   AuthorizationError,
-  ConfigurationError,
   ServerError,
   TransportError,
 } from "../errors.js";
+import {
+  flowServiceDefinition,
+  policyServiceDefinition,
+} from "../generated/policy-rpc.js";
 import type {
   ExecuteFlowRequest,
   ExecutePolicyRequest,
@@ -14,8 +17,6 @@ import type {
   PolicyExecutionResult,
   RpcTransportConfig,
 } from "../types.js";
-
-const PROTO_PATH = new URL("../../../protos/policy/v1/policy.proto", import.meta.url);
 
 type RpcMetadata = {
   add: (key: string, value: string) => void;
@@ -31,11 +32,10 @@ type GrpcModule = {
     UNAUTHENTICATED: number;
     PERMISSION_DENIED: number;
   };
-  loadPackageDefinition: (definition: unknown) => unknown;
-};
-
-type ProtoLoaderModule = {
-  load: (path: string, options: Record<string, unknown>) => Promise<unknown>;
+  makeGenericClientConstructor: (
+    definition: unknown,
+    serviceName: string,
+  ) => new (address: string, credentials: unknown) => unknown;
 };
 
 type PolicyServiceClient = {
@@ -104,49 +104,28 @@ export class RpcExecutionTransport {
   }
 
   private async createPolicyClient(): Promise<PolicyServiceClient> {
-    const { grpcModule, packageDefinition } = await this.loadModules();
-    const loaded = grpcModule.loadPackageDefinition(packageDefinition) as {
-      policy: {
-        v1: {
-          PolicyService: PolicyServiceCtor;
-        };
-      };
-    };
-    return new loaded.policy.v1.PolicyService(this.transport.address, await this.credentials(grpcModule));
+    const grpcModule = await this.loadGrpcModule();
+    const ClientCtor = grpcModule.makeGenericClientConstructor(
+      policyServiceDefinition,
+      "PolicyService",
+    ) as PolicyServiceCtor;
+    return new ClientCtor(this.transport.address, await this.credentials(grpcModule));
   }
 
   private async createFlowClient(): Promise<FlowServiceClient> {
-    const { grpcModule, packageDefinition } = await this.loadModules();
-    const loaded = grpcModule.loadPackageDefinition(packageDefinition) as {
-      policy: {
-        v1: {
-          FlowService: FlowServiceCtor;
-        };
-      };
-    };
-    return new loaded.policy.v1.FlowService(this.transport.address, await this.credentials(grpcModule));
+    const grpcModule = await this.loadGrpcModule();
+    const ClientCtor = grpcModule.makeGenericClientConstructor(
+      flowServiceDefinition,
+      "FlowService",
+    ) as FlowServiceCtor;
+    return new ClientCtor(this.transport.address, await this.credentials(grpcModule));
   }
 
-  private async loadModules(): Promise<{ grpcModule: GrpcModule; packageDefinition: unknown }> {
+  private async loadGrpcModule(): Promise<GrpcModule> {
     try {
-      const [grpcImport, loaderImport] = await Promise.all([
-        import("@grpc/grpc-js"),
-        import("@grpc/proto-loader"),
-      ]);
-
-      const grpcModule = grpcImport as unknown as GrpcModule;
-      const protoLoader = loaderImport as unknown as ProtoLoaderModule;
-      const packageDefinition = await protoLoader.load(PROTO_PATH.pathname, {
-        keepCase: false,
-        longs: String,
-        enums: String,
-        defaults: true,
-        oneofs: true,
-      });
-
-      return { grpcModule, packageDefinition };
+      return (await import("@grpc/grpc-js")) as unknown as GrpcModule;
     } catch (error) {
-      throw new ConfigurationError("failed to load gRPC runtime dependencies", {
+      throw new TransportError("failed to load gRPC runtime dependencies", {
         cause: error,
       });
     }

@@ -11,6 +11,8 @@ This SDK is intentionally narrow:
 
 It does not support creating, updating, publishing, or administering resources.
 
+The gRPC transport uses checked-in generated client definitions. It does not depend on a sibling `.proto` file being present on disk at runtime.
+
 ## Install
 
 ```bash

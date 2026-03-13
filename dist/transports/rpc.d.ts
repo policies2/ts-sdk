@@ -13,7 +13,7 @@ export declare class RpcExecutionTransport {
     private getFlowClient;
     private createPolicyClient;
     private createFlowClient;
-    private loadModules;
+    private loadGrpcModule;
     private credentials;
     private invokePolicy;
     private invokeFlow;

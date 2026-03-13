@@ -1,5 +1,5 @@
-import { AuthenticationError, AuthorizationError, ConfigurationError, ServerError, TransportError, } from "../errors.js";
-const PROTO_PATH = new URL("../../../protos/proto/v1/policy.proto", import.meta.url);
+import { AuthenticationError, AuthorizationError, ServerError, TransportError, } from "../errors.js";
+import { flowServiceDefinition, policyServiceDefinition, } from "../generated/policy-rpc.js";
 export class RpcExecutionTransport {
     config;
     transport;
@@ -36,34 +36,21 @@ export class RpcExecutionTransport {
         return this.flowClientPromise;
     }
     async createPolicyClient() {
-        const { grpcModule, packageDefinition } = await this.loadModules();
-        const loaded = grpcModule.loadPackageDefinition(packageDefinition);
-        return new loaded.policy.v1.PolicyService(this.transport.address, await this.credentials(grpcModule));
+        const grpcModule = await this.loadGrpcModule();
+        const ClientCtor = grpcModule.makeGenericClientConstructor(policyServiceDefinition, "PolicyService");
+        return new ClientCtor(this.transport.address, await this.credentials(grpcModule));
     }
     async createFlowClient() {
-        const { grpcModule, packageDefinition } = await this.loadModules();
-        const loaded = grpcModule.loadPackageDefinition(packageDefinition);
-        return new loaded.policy.v1.FlowService(this.transport.address, await this.credentials(grpcModule));
+        const grpcModule = await this.loadGrpcModule();
+        const ClientCtor = grpcModule.makeGenericClientConstructor(flowServiceDefinition, "FlowService");
+        return new ClientCtor(this.transport.address, await this.credentials(grpcModule));
     }
-    async loadModules() {
+    async loadGrpcModule() {
         try {
-            const [grpcImport, loaderImport] = await Promise.all([
-                import("@grpc/grpc-js"),
-                import("@grpc/proto-loader"),
-            ]);
-            const grpcModule = grpcImport;
-            const protoLoader = loaderImport;
-            const packageDefinition = await protoLoader.load(PROTO_PATH.pathname, {
-                keepCase: false,
-                longs: String,
-                enums: String,
-                defaults: true,
-                oneofs: true,
-            });
-            return { grpcModule, packageDefinition };
+            return (await import("@grpc/grpc-js"));
         }
         catch (error) {
-            throw new ConfigurationError("failed to load gRPC runtime dependencies", {
+            throw new TransportError("failed to load gRPC runtime dependencies", {
                 cause: error,
             });
         }
