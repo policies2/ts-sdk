@@ -9,11 +9,12 @@
     "dist"
   ],
   "scripts": {
+    "generate:rpc-schema": "node scripts/generate-rpc-schema.mjs",
     "build": "tsc",
     "build:examples": "tsc --module NodeNext --moduleResolution NodeNext --target ES2022 --outDir dist/examples examples/*.ts",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
-    "prepublishOnly": "tsc"
+    "prepublishOnly": "bun run generate:rpc-schema && tsc"
   },
   "keywords": [
     "policy",
@@ -29,6 +30,7 @@
   },
   "devDependencies": {
     "@types/bun": "^1.3.9",
+    "protobufjs-cli": "^1.1.3",
     "typescript": "^5.9.3"
   }
 }
