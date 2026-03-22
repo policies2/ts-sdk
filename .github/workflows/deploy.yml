@@ -34,6 +34,6 @@ jobs:
       - name: Rollup
         run: bun run build
       - name: NPM
-        run: npm publish --no-git-checks
+        run: npm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
