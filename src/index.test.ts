@@ -38,7 +38,6 @@ describe("ExecutionClient", () => {
       const client = new ExecutionClient({
         apiKey: "pk_test",
         transport: {
-          kind: "rest",
           baseUrl: "https://api.policy2.net",
           fetch: fetchMock as typeof fetch,
         },
@@ -74,7 +73,6 @@ describe("ExecutionClient", () => {
       const client = new ExecutionClient({
         apiKey: "pk_test",
         transport: {
-          kind: "rest",
           baseUrl: "https://api.policy2.net/",
           fetch: fetchMock as typeof fetch,
         },
@@ -119,7 +117,6 @@ describe("ExecutionClient", () => {
       const client = new ExecutionClient({
         apiKey: "pk_test",
         transport: {
-          kind: "rest",
           baseUrl: "https://api.policy2.net",
           fetch: fetchMock as typeof fetch,
         },
@@ -140,7 +137,6 @@ describe("ExecutionClient", () => {
       const client = new ExecutionClient({
         apiKey: "pk_test",
         transport: {
-          kind: "rest",
           baseUrl: "https://api.policy2.net",
           fetch: fetchMock as typeof fetch,
         },
@@ -159,7 +155,6 @@ describe("ExecutionClient", () => {
       const client = new ExecutionClient({
         apiKey: "pk_test",
         transport: {
-          kind: "rest",
           baseUrl: "https://api.policy2.net",
           fetch: fetchMock as typeof fetch,
         },
@@ -178,7 +173,6 @@ describe("ExecutionClient", () => {
       const client = new ExecutionClient({
         apiKey: "pk_test",
         transport: {
-          kind: "rest",
           baseUrl: "https://api.policy2.net",
           fetch: fetchMock as typeof fetch,
         },
@@ -197,7 +191,6 @@ describe("ExecutionClient", () => {
       const client = new ExecutionClient({
         apiKey: "pk_test",
         transport: {
-          kind: "rest",
           baseUrl: "https://api.policy2.net",
           fetch: fetchMock as typeof fetch,
         },
@@ -218,7 +211,6 @@ describe("ExecutionClient", () => {
       const client = new ExecutionClient({
         apiKey: "pk_test",
         transport: {
-          kind: "rest",
           baseUrl: "https://api.policy2.net",
           fetch: fetchMock as typeof fetch,
         },
@@ -233,254 +225,6 @@ describe("ExecutionClient", () => {
     });
   });
 
-  describe("RPC", () => {
-    it("sends base_id for RPC policy execution when requested", async () => {
-      const metadataAdds: Array<[string, string]> = [];
-      const runPolicy = mock(
-        (
-          request: { policyId?: string; baseId?: string; data: Record<string, unknown> },
-          _metadata: { add: (key: string, value: string) => void },
-          options: { deadline?: Date },
-          callback: (error: Error | null, response?: Record<string, unknown>) => void,
-        ) => {
-          expect(request).toEqual({
-            baseId: "base-123",
-            data: { user: { age: 25 } },
-          });
-          expect(options.deadline).toBeInstanceOf(Date);
-          callback(null, {
-            result: true,
-            trace: null,
-            rule: [],
-            data: { user: { age: 25 } },
-            error: null,
-            labels: null,
-          });
-        },
-      );
-
-      const runFlow = mock(
-        (
-          _request: { flowId?: string; baseId?: string; data: Record<string, unknown> },
-          _metadata: { add: (key: string, value: string) => void },
-          _options: { deadline?: Date },
-          callback: (error: Error | null, response?: Record<string, unknown>) => void,
-        ) => callback(null, { result: true, nodeResponse: [] }),
-      );
-
-      mock.module("@grpc/grpc-js", () => ({
-        Metadata: class {
-          add(key: string, value: string) {
-            metadataAdds.push([key, value]);
-          }
-        },
-        credentials: {
-          createInsecure: () => ({}),
-          createSsl: () => ({}),
-        },
-        status: {
-          UNAUTHENTICATED: 16,
-          PERMISSION_DENIED: 7,
-        },
-        makeGenericClientConstructor: (_definition: unknown, serviceName: string) =>
-          class {
-            constructor(_address: string, _credentials: unknown) {}
-
-            RunPolicy = serviceName === "PolicyService" ? runPolicy : undefined;
-            RunFlow = serviceName === "FlowService" ? runFlow : undefined;
-          },
-      }));
-
-      const client = new ExecutionClient({
-        apiKey: "pk_test",
-        transport: {
-          kind: "rpc",
-          address: "localhost:8081",
-        },
-      });
-
-      const response = await client.executePolicy({
-        id: "base-123",
-        reference: "base",
-        data: { user: { age: 25 } },
-      });
-
-      expect(response.kind).toBe("policy");
-      expect(response.result).toBe(true);
-      expect(metadataAdds).toContainEqual(["x-api-key", "pk_test"]);
-    });
-
-    it("sends flowId for RPC flow execution by default", async () => {
-      const runPolicy = mock(
-        (
-          _request: { policyId?: string; baseId?: string; data: Record<string, unknown> },
-          _metadata: { add: (key: string, value: string) => void },
-          _options: { deadline?: Date },
-          callback: (error: Error | null, response?: Record<string, unknown>) => void,
-        ) => callback(null, { result: true, trace: null, rule: [], data: {}, error: null, labels: null }),
-      );
-      const runFlow = mock(
-        (
-          request: { flowId?: string; baseId?: string; data: Record<string, unknown> },
-          _metadata: { add: (key: string, value: string) => void },
-          options: { deadline?: Date },
-          callback: (error: Error | null, response?: Record<string, unknown>) => void,
-        ) => {
-          expect(request).toEqual({
-            flowId: "flow-123",
-            data: { user: { age: 25 } },
-          });
-          expect(options.deadline).toBeInstanceOf(Date);
-          callback(null, { result: { approved: true }, nodeResponse: [] });
-        },
-      );
-
-      mock.module("@grpc/grpc-js", () => ({
-        Metadata: class {
-          add(_key: string, _value: string) {}
-        },
-        credentials: {
-          createInsecure: () => ({}),
-          createSsl: () => ({}),
-        },
-        status: {
-          UNAUTHENTICATED: 16,
-          PERMISSION_DENIED: 7,
-        },
-        makeGenericClientConstructor: (_definition: unknown, serviceName: string) =>
-          class {
-            constructor(_address: string, _credentials: unknown) {}
-
-            RunPolicy = serviceName === "PolicyService" ? runPolicy : undefined;
-            RunFlow = serviceName === "FlowService" ? runFlow : undefined;
-          },
-      }));
-
-      const client = new ExecutionClient({
-        apiKey: "pk_test",
-        transport: {
-          kind: "rpc",
-          address: "localhost:8081",
-        },
-      });
-
-      const response = await client.executeFlow({
-        id: "flow-123",
-        data: { user: { age: 25 } },
-      });
-
-      expect(response.kind).toBe("flow");
-      expect(response.nodeResponse).toEqual([]);
-    });
-
-    it("maps RPC unauthenticated errors to AuthenticationError", async () => {
-      const runPolicy = mock(
-        (
-          _request: { policyId?: string; baseId?: string; data: Record<string, unknown> },
-          _metadata: { add: (key: string, value: string) => void },
-          _options: { deadline?: Date },
-          callback: (error: Error | null, response?: Record<string, unknown>) => void,
-        ) => {
-          const error = Object.assign(new Error("bad key"), { code: 16 });
-          callback(error);
-        },
-      );
-
-      mock.module("@grpc/grpc-js", () => ({
-        Metadata: class {
-          add(_key: string, _value: string) {}
-        },
-        credentials: {
-          createInsecure: () => ({}),
-          createSsl: () => ({}),
-        },
-        status: {
-          UNAUTHENTICATED: 16,
-          PERMISSION_DENIED: 7,
-        },
-        makeGenericClientConstructor: () =>
-          class {
-            constructor(_address: string, _credentials: unknown) {}
-
-            RunPolicy = runPolicy;
-          },
-      }));
-
-      const client = new ExecutionClient({
-        apiKey: "pk_test",
-        transport: {
-          kind: "rpc",
-          address: "localhost:8081",
-        },
-      });
-
-      await expect(
-        client.executePolicy({
-          id: "policy-123",
-          data: { user: { age: 25 } },
-        }),
-      ).rejects.toBeInstanceOf(AuthenticationError);
-    });
-
-    it("maps RPC permission denied errors to AuthorizationError", async () => {
-      const runFlow = mock(
-        (
-          _request: { flowId?: string; baseId?: string; data: Record<string, unknown> },
-          _metadata: { add: (key: string, value: string) => void },
-          _options: { deadline?: Date },
-          callback: (error: Error | null, response?: Record<string, unknown>) => void,
-        ) => {
-          const error = Object.assign(new Error("forbidden"), { code: 7 });
-          callback(error);
-        },
-      );
-
-      mock.module("@grpc/grpc-js", () => ({
-        Metadata: class {
-          add(_key: string, _value: string) {}
-        },
-        credentials: {
-          createInsecure: () => ({}),
-          createSsl: () => ({}),
-        },
-        status: {
-          UNAUTHENTICATED: 16,
-          PERMISSION_DENIED: 7,
-        },
-        makeGenericClientConstructor: (_definition: unknown, serviceName: string) =>
-          class {
-            constructor(_address: string, _credentials: unknown) {}
-
-            RunPolicy =
-              serviceName === "PolicyService"
-                ? (
-                    _request: { policyId?: string; baseId?: string; data: Record<string, unknown> },
-                    _metadata: { add: (key: string, value: string) => void },
-                    _options: { deadline?: Date },
-                    callback: (error: Error | null, response?: Record<string, unknown>) => void,
-                  ) => callback(null, { result: true, trace: null, rule: [], data: {}, error: null, labels: null })
-                : undefined;
-            RunFlow = serviceName === "FlowService" ? runFlow : undefined;
-          },
-      }));
-
-      const client = new ExecutionClient({
-        apiKey: "pk_test",
-        transport: {
-          kind: "rpc",
-          address: "localhost:8081",
-        },
-      });
-
-      await expect(
-        client.executeFlow({
-          id: "flow-123",
-          data: { user: { age: 25 } },
-        }),
-      ).rejects.toBeInstanceOf(AuthorizationError);
-    });
-  });
-
   describe("configuration", () => {
     it("requires a non-empty apiKey", () => {
       expect(
@@ -488,7 +232,6 @@ describe("ExecutionClient", () => {
           new ExecutionClient({
             apiKey: "",
             transport: {
-              kind: "rest",
               baseUrl: "https://api.policy2.net",
             },
           }),

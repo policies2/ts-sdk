@@ -20,6 +20,4 @@ export type {
   JsonValue,
   PolicyExecutionResult,
   RestTransportConfig,
-  RpcTransportConfig,
-  TransportConfig,
 } from "./types.js";
