@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@policies2/ts-sdk",
+      "name": "@policies2/sdk",
       "dependencies": {
         "@grpc/grpc-js": "^1.14.0",
         "protobufjs": "^7.5.4",

@@ -1,5 +1,5 @@
 {
-  "name": "@policies2/ts-sdk",
+  "name": "@policies2/sdk",
   "version": "0.1.0",
   "description": "TypeScript SDK for executing policies and flows over REST or gRPC.",
   "type": "module",

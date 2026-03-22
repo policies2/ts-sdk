@@ -1,4 +1,4 @@
-# `@policies2/ts-sdk`
+# `@policies2/sdk`
 
 Execute stored policies and flows over REST or gRPC using API keys only.
 
@@ -16,13 +16,13 @@ The gRPC transport uses checked-in generated client definitions. It does not dep
 ## Install
 
 ```bash
-npm install @policies2/ts-sdk
+npm install @policies2/sdk
 ```
 
 ## REST
 
 ```ts
-import { ExecutionClient } from "@policies2/ts-sdk";
+import { ExecutionClient } from "@policies2/sdk";
 
 const client = new ExecutionClient({
   apiKey: process.env.POLICY_API_KEY!,
@@ -48,7 +48,7 @@ console.log(result.result);
 ## gRPC
 
 ```ts
-import { ExecutionClient } from "@policies2/ts-sdk";
+import { ExecutionClient } from "@policies2/sdk";
 
 const client = new ExecutionClient({
   apiKey: process.env.POLICY_API_KEY!,
