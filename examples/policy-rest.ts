@@ -3,7 +3,6 @@ import { ExecutionClient } from "../src/index.js";
 const client = new ExecutionClient({
   apiKey: process.env.POLICY_API_KEY ?? "pk_live_example",
   transport: {
-    kind: "rest",
     baseUrl: process.env.POLICY_API_URL ?? "https://api.policy2.net",
   },
 });

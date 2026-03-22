@@ -57,20 +57,12 @@ export interface ExecuteFlowRequest {
     reference?: "base" | "version";
 }
 export interface RestTransportConfig {
-    kind: "rest";
     baseUrl: string;
     fetch?: typeof fetch;
 }
-export interface RpcTransportConfig {
-    kind: "rpc";
-    address: string;
-    tls?: boolean;
-    grpcCredentialsFactory?: () => Promise<unknown> | unknown;
-}
-export type TransportConfig = RestTransportConfig | RpcTransportConfig;
 export interface ExecutionClientConfig {
     apiKey: string;
-    transport: TransportConfig;
+    transport: RestTransportConfig;
     timeoutMs?: number;
     userAgent?: string;
 }
