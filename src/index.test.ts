@@ -17,7 +17,7 @@ describe("ExecutionClient", () => {
   describe("REST", () => {
     it("executes a policy over REST with x-api-key auth", async () => {
       const fetchMock = mock(async (input: string | URL | Request, init?: RequestInit) => {
-        expect(String(input)).toBe("https://api.policy2.net/run/policy_version/policy-123");
+        expect(String(input)).toBe("https://api.policy2.net/run/policy/policy-123");
         expect((init?.headers as Record<string, string>)["x-api-key"]).toBe("pk_test");
         expect(init?.method).toBe("POST");
         expect(init?.body).toBe(JSON.stringify({ data: { user: { age: 25 } } }));
@@ -38,14 +38,12 @@ describe("ExecutionClient", () => {
       const client = new ExecutionClient({
         apiKey: "pk_test",
         transport: {
-          baseUrl: "https://api.policy2.net",
           fetch: fetchMock as typeof fetch,
         },
       });
 
       const response = await client.executePolicy({
         id: "policy-123",
-        reference: "version",
         data: { user: { age: 25 } },
       });
 
@@ -54,9 +52,9 @@ describe("ExecutionClient", () => {
       expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
-    it("uses the base policy path when requested", async () => {
+    it("executes a policy version over REST when requested explicitly", async () => {
       const fetchMock = mock(async (input: string | URL | Request) => {
-        expect(String(input)).toBe("https://api.policy2.net/run/policy/base-123");
+        expect(String(input)).toBe("https://api.policy2.net/run/policy_version/version-123");
         return new Response(
           JSON.stringify({
             result: true,
@@ -78,9 +76,8 @@ describe("ExecutionClient", () => {
         },
       });
 
-      await client.executePolicy({
-        id: "base-123",
-        reference: "base",
+      await client.executePolicyVersion({
+        id: "version-123",
         data: {},
       });
 
@@ -130,6 +127,37 @@ describe("ExecutionClient", () => {
 
       expect(response.kind).toBe("flow");
       expect(response.nodeResponse[0]?.nodeId).toBe("node-1");
+    });
+
+    it("uses the default base URL when one is not provided", async () => {
+      const fetchMock = mock(async (input: string | URL | Request) => {
+        expect(String(input)).toBe("https://api.policy2.net/run/policy/policy-123");
+        return new Response(
+          JSON.stringify({
+            result: true,
+            trace: null,
+            rule: [],
+            data: {},
+            error: null,
+            labels: null,
+          }),
+          { status: 200 },
+        );
+      });
+
+      const client = new ExecutionClient({
+        apiKey: "pk_test",
+        transport: {
+          fetch: fetchMock as typeof fetch,
+        },
+      });
+
+      await client.executePolicy({
+        id: "policy-123",
+        data: {},
+      });
+
+      expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
     it("maps REST 401 to AuthenticationError", async () => {
@@ -231,9 +259,6 @@ describe("ExecutionClient", () => {
         () =>
           new ExecutionClient({
             apiKey: "",
-            transport: {
-              baseUrl: "https://api.policy2.net",
-            },
           }),
       ).toThrow(ConfigurationError);
     });

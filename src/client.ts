@@ -8,6 +8,8 @@ import type {
   PolicyExecutionResult,
 } from "./types.js";
 
+const DEFAULT_BASE_URL = "https://api.policy2.net";
+
 export class ExecutionClient {
   private readonly transport: RestExecutionTransport;
 
@@ -16,11 +18,20 @@ export class ExecutionClient {
       throw new ConfigurationError("apiKey is required");
     }
 
-    this.transport = new RestExecutionTransport(config, config.transport);
+    const transport = {
+      baseUrl: config.transport?.baseUrl ?? DEFAULT_BASE_URL,
+      fetch: config.transport?.fetch,
+    };
+
+    this.transport = new RestExecutionTransport(config, transport);
   }
 
   executePolicy(request: ExecutePolicyRequest): Promise<PolicyExecutionResult> {
     return this.transport.executePolicy(request);
+  }
+
+  executePolicyVersion(request: ExecutePolicyRequest): Promise<PolicyExecutionResult> {
+    return this.transport.executePolicyVersion(request);
   }
 
   executeFlow(request: ExecuteFlowRequest): Promise<FlowExecutionResult> {

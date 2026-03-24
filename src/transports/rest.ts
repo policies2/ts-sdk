@@ -14,15 +14,20 @@ import type {
   RestTransportConfig,
 } from "../types.js";
 
+type ResolvedRestTransportConfig = RestTransportConfig & {
+  baseUrl: string;
+};
+
 function trimTrailingSlash(value: string): string {
   return value.endsWith("/") ? value.slice(0, -1) : value;
 }
 
 function policyPath(request: ExecutePolicyRequest): string {
-  const reference = request.reference ?? "version";
-  return reference === "base"
-    ? `/run/policy/${request.id}`
-    : `/run/policy_version/${request.id}`;
+  return `/run/policy/${request.id}`;
+}
+
+function policyVersionPath(request: ExecutePolicyRequest): string {
+  return `/run/policy_version/${request.id}`;
 }
 
 function flowPath(request: ExecuteFlowRequest): string {
@@ -57,7 +62,7 @@ export class RestExecutionTransport {
 
   constructor(
     private readonly config: ExecutionClientConfig,
-    transport: RestTransportConfig,
+    transport: ResolvedRestTransportConfig,
   ) {
     this.baseUrl = trimTrailingSlash(transport.baseUrl);
     this.fetchImpl = transport.fetch ?? fetch;
@@ -65,6 +70,14 @@ export class RestExecutionTransport {
 
   async executePolicy(request: ExecutePolicyRequest): Promise<PolicyExecutionResult> {
     return this.send<PolicyExecutionResult>(policyPath(request), encodeBody(request.data), "policy");
+  }
+
+  async executePolicyVersion(request: ExecutePolicyRequest): Promise<PolicyExecutionResult> {
+    return this.send<PolicyExecutionResult>(
+      policyVersionPath(request),
+      encodeBody(request.data),
+      "policy",
+    );
   }
 
   async executeFlow(request: ExecuteFlowRequest): Promise<FlowExecutionResult> {

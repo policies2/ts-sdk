@@ -3,10 +3,10 @@ function trimTrailingSlash(value) {
     return value.endsWith("/") ? value.slice(0, -1) : value;
 }
 function policyPath(request) {
-    const reference = request.reference ?? "version";
-    return reference === "base"
-        ? `/run/policy/${request.id}`
-        : `/run/policy_version/${request.id}`;
+    return `/run/policy/${request.id}`;
+}
+function policyVersionPath(request) {
+    return `/run/policy_version/${request.id}`;
 }
 function flowPath(request) {
     const reference = request.reference ?? "version";
@@ -40,6 +40,9 @@ export class RestExecutionTransport {
     }
     async executePolicy(request) {
         return this.send(policyPath(request), encodeBody(request.data), "policy");
+    }
+    async executePolicyVersion(request) {
+        return this.send(policyVersionPath(request), encodeBody(request.data), "policy");
     }
     async executeFlow(request) {
         return this.send(flowPath(request), encodeBody(request.data), "flow");
