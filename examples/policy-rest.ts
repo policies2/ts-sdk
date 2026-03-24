@@ -2,14 +2,15 @@ import { ExecutionClient } from "../src/index.js";
 
 const client = new ExecutionClient({
   apiKey: process.env.POLICY_API_KEY ?? "pk_live_example",
-  transport: {
-    baseUrl: process.env.POLICY_API_URL ?? "https://api.policy2.net",
-  },
+  transport: process.env.POLICY_API_URL
+    ? {
+        baseUrl: process.env.POLICY_API_URL,
+      }
+    : undefined,
 });
 
 const response = await client.executePolicy({
   id: "3b7d4b2a-9aa0-4b6d-a1b4-9dcf11ce12ab",
-  reference: "base",
   data: {
     drivingTest: {
       person: {

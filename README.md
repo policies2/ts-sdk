@@ -24,14 +24,10 @@ import { ExecutionClient } from "@policies2/sdk";
 
 const client = new ExecutionClient({
   apiKey: process.env.POLICY_API_KEY!,
-  transport: {
-    baseUrl: "https://api.policy2.net",
-  },
 });
 
 const result = await client.executePolicy({
   id: "3b7d4b2a-9aa0-4b6d-a1b4-9dcf11ce12ab",
-  reference: "base",
   data: {
     user: {
       age: 25,
@@ -50,7 +46,11 @@ Creates an execute-only client.
 
 ### `client.executePolicy(request)`
 
-Executes a stored policy and returns a `PolicyExecutionResult`.
+Executes a base policy by ID and returns a `PolicyExecutionResult`.
+
+### `client.executePolicyVersion(request)`
+
+Executes an exact policy version by ID and returns a `PolicyExecutionResult`.
 
 ### `client.executeFlow(request)`
 
@@ -70,4 +70,7 @@ bun examples/policy-rest.ts
 ## Notes
 
 - API key auth is the only auth model exposed by this SDK.
-- REST supports base IDs and exact version IDs.
+- Base URL defaults to `https://api.policy2.net` and can be overridden with `transport.baseUrl`.
+- `executePolicy()` uses the base policy endpoint: `/run/policy/{id}`.
+- `executePolicyVersion()` uses the versioned policy endpoint: `/run/policy_version/{id}`.
+- REST flow execution still supports base IDs and exact version IDs via `reference`.

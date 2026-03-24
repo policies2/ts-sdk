@@ -49,7 +49,6 @@ export interface FlowExecutionResult {
 export interface ExecutePolicyRequest {
     id: string;
     data: JsonObject;
-    reference?: "base" | "version";
 }
 export interface ExecuteFlowRequest {
     id: string;
@@ -57,12 +56,12 @@ export interface ExecuteFlowRequest {
     reference?: "base" | "version";
 }
 export interface RestTransportConfig {
-    baseUrl: string;
+    baseUrl?: string;
     fetch?: typeof fetch;
 }
 export interface ExecutionClientConfig {
     apiKey: string;
-    transport: RestTransportConfig;
+    transport?: RestTransportConfig;
     timeoutMs?: number;
     userAgent?: string;
 }

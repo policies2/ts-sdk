@@ -4,5 +4,6 @@ export declare class ExecutionClient {
     private readonly transport;
     constructor(config: ExecutionClientConfig);
     executePolicy(request: ExecutePolicyRequest): Promise<PolicyExecutionResult>;
+    executePolicyVersion(request: ExecutePolicyRequest): Promise<PolicyExecutionResult>;
     executeFlow(request: ExecuteFlowRequest): Promise<FlowExecutionResult>;
 }
