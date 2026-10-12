@@ -22,19 +22,27 @@ function trimTrailingSlash(value: string): string {
   return value.endsWith("/") ? value.slice(0, -1) : value;
 }
 
+// encodeURIComponent leaves '.', so an id of ".." would still collapse the
+// path; encode it too so an id can never change the request target.
+export function encodePathSegment(segment: string): string {
+  return encodeURIComponent(segment).replace(
+    /[.!'()*]/g,
+    (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`,
+  );
+}
+
 function policyPath(request: ExecutePolicyRequest): string {
-  return `/run/policy/${request.id}`;
+  return `/run/policy/${encodePathSegment(request.id)}`;
 }
 
 function policyVersionPath(request: ExecutePolicyRequest): string {
-  return `/run/policy_version/${request.id}`;
+  return `/run/policy_version/${encodePathSegment(request.id)}`;
 }
 
 function flowPath(request: ExecuteFlowRequest): string {
   const reference = request.reference ?? "version";
-  return reference === "base"
-    ? `/run/flow/${request.id}`
-    : `/run/flow_version/${request.id}`;
+  const id = encodePathSegment(request.id);
+  return reference === "base" ? `/run/flow/${id}` : `/run/flow_version/${id}`;
 }
 
 function encodeBody(data: JsonObject): string {

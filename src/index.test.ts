@@ -264,3 +264,29 @@ describe("ExecutionClient", () => {
     });
   });
 });
+
+describe("request safety", () => {
+  it("encodes ids so they cannot change the request path", async () => {
+    const { encodePathSegment } = await import("./transports/rest.js");
+    expect(encodePathSegment("../admin")).toBe("%2E%2E%2Fadmin");
+    expect(encodePathSegment("..")).toBe("%2E%2E");
+    expect(encodePathSegment("x?y=1#")).toBe("x%3Fy%3D1%23");
+    expect(encodePathSegment("3b7d4b2a-9aa0-4b6d")).toBe("3b7d4b2a-9aa0-4b6d");
+  });
+
+  it("requires https unless the base url is loopback", () => {
+    for (const ok of [
+      "https://api.policy2.net",
+      "http://localhost:8080",
+      "http://127.0.0.1:8080",
+      "http://[::1]:8080",
+    ]) {
+      expect(() => new ExecutionClient({ apiKey: "pk_test", transport: { baseUrl: ok } })).not.toThrow();
+    }
+    for (const bad of ["http://api.policy2.net", "ftp://api.policy2.net", "not a url"]) {
+      expect(() => new ExecutionClient({ apiKey: "pk_test", transport: { baseUrl: bad } })).toThrow(
+        ConfigurationError,
+      );
+    }
+  });
+});
